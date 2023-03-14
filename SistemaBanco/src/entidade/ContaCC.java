@@ -1,5 +1,9 @@
 package entidade;
 
+import java.util.ArrayList;
+
+import persistencia.ContaDAO;
+
 public class ContaCC {
 
 	private String nrConta;
@@ -58,6 +62,56 @@ public class ContaCC {
 		this.cpf = cpf;
 	}
 	
+	public String criarDB() {
+		
+		ContaDAO c = new ContaDAO();
+		String retorno = c.criarTodoDB();
+		
+		return retorno;
+	}
+	
+	public String deletarDB() {
+		return new ContaDAO().deletarDB();
+	}
+	
+	public String cadastrarCC () {
+		
+		return new ContaDAO().cadastrarCC(this);		
+	}
+	
+	public String sacarCC(double valorSaque, String cpf) {	
+		
+		if (valorSaque > 0 && !cpf.isEmpty() && cpf.charAt(3) == '.' && cpf.charAt(7) == '.' && cpf.charAt(11) == '-' && new ContaDAO().verificaCpf(cpf)) {
+			return new ContaDAO().sacarContaCC(valorSaque, cpf);
+		} else {
+			return "Valor de saque ou/e Cpf inválidos!";
+		}
+		
+	}
+	
+	public String depositarCC(double valorDeposito, String cpf) {
+		
+		if (new ContaDAO().verificaCpf(cpf) && valorDeposito > 0 && !cpf.isEmpty() && cpf.charAt(3) == '.' && cpf.charAt(7) == '.' && cpf.charAt(11) == '-') {
+			return new ContaDAO().depositarContaCC(valorDeposito, cpf);
+		}else {
+			return "Valor de deposito ou/e Cpf inválidos!";
+		}
+		
+	}
+	
+	public String verificarCC(String cpf) {
+		
+		if (!cpf.isEmpty() && cpf.charAt(3) == '.' && cpf.charAt(7) == '.' && cpf.charAt(11) == '-' && new ContaDAO().verificaCpf(cpf)) {
+			return new ContaDAO().veririficarConta(cpf);
+		} else {
+			return "Cpf inválido!";
+		}
+		
+	}
+	
+	public ArrayList<String> listarContasCC(){
+		return new ContaDAO().listarContasCC();
+	}
 	
 	
 }
