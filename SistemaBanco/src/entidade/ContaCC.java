@@ -91,7 +91,6 @@ public class ContaCC {
 	}
 	
 	public String cadastrarCC () {
-		
 		return new ContaDAO().cadastrarCC(this);		
 	}
 	
