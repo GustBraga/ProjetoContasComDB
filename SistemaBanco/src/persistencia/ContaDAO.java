@@ -14,26 +14,143 @@ public class ContaDAO {
 
 	public boolean verificaCpf(String cpf) {
 
-		String aux = cpf.replace(".", "").replace("-", "");
+		String aux = cpf.replace(".", "").replace("-", "").trim();
 		int cont = 0;
+		
+		if (cpf.length() < 14 || cpf.length() > 14) {
+			return false;
+		}
+		
+		if (cpf.charAt(3) != '.' && cpf.charAt(7) != '.' && cpf.charAt(11) != '-') {
+			return false;
+		}
 
 		for (int i = 0; i < aux.length(); i++) {
 
 			if (aux.charAt(i) != '0' || aux.charAt(i) != '1' || aux.charAt(i) != '2' || aux.charAt(i) != '3'
 					|| aux.charAt(i) != '4' || aux.charAt(i) != '5' || aux.charAt(i) != '6' || aux.charAt(i) != '7'
 					|| aux.charAt(i) != '8' || aux.charAt(i) != '9') {
-				
-				cont ++;
+
+				cont++;
 			}
 		}
-		
-		if (cont == 0) {
-			
+
+		if (cont == aux.length()) {
+
 			return true;
-			
+
 		} else {
 			return false;
 		}
+	}
+
+	public boolean verificaNrConta(String nrConta) {
+
+		String aux = nrConta.replace("-", "").trim();
+		int cont = 0;
+		
+		if (nrConta.trim().length() < 8 || nrConta.trim().length() > 8) {
+			return false;
+		}
+		
+		if (nrConta.charAt(6) != '-') {
+			return false;
+		}
+
+		for (int i = 0; i < aux.length(); i++) {
+			if (aux.charAt(i) != '0' || aux.charAt(i) != '1' || aux.charAt(i) != '2' || aux.charAt(i) != '3'
+					|| aux.charAt(i) != '4' || aux.charAt(i) != '5' || aux.charAt(i) != '6' || aux.charAt(i) != '7'
+					|| aux.charAt(i) != '8' || aux.charAt(i) != '9') {
+				cont++;
+			}
+		}
+
+		if (cont == aux.length()) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	public boolean verificaAgencia(String agencia) {
+
+		String aux = agencia.trim();
+		int cont = 0;
+		
+		if (agencia.length() < 4 || agencia.length() > 4) {
+			return false;
+		}
+
+		for (int i = 0; i < aux.length(); i++) {
+			if (aux.charAt(i) != '0' || aux.charAt(i) != '1' || aux.charAt(i) != '2' || aux.charAt(i) != '3'
+					|| aux.charAt(i) != '4' || aux.charAt(i) != '5' || aux.charAt(i) != '6' || aux.charAt(i) != '7'
+					|| aux.charAt(i) != '8' || aux.charAt(i) != '9') {
+				cont++;
+			}
+		}
+
+		if (cont == aux.length()) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	public boolean verificaTitular(String titular) {
+		
+		char letras[] = { 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S',
+				'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n',
+				'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', ' ' };
+
+		int cont = 0;
+		
+		if (titular.length() > 30) {
+			
+			return false;
+		}
+
+		for (int i = 0; i < titular.length(); i++) {
+			for (int j = 0; j < letras.length; j++) {
+
+				if (titular.charAt(i) == letras[j]) {
+					cont++;
+				}
+
+			}
+
+		}
+
+		if (cont == titular.length()) {
+			return true;
+		} else {
+			return false;
+		}
+
+	}
+
+	public boolean verificaDigito(double digito) {
+
+		String aux = Double.toString(digito).trim();
+		int cont = 0;
+		int contPonto = 0;
+		
+		for (int i = 0; i < aux.length(); i++) {
+			if (aux.charAt(i) != '0' || aux.charAt(i) != '1' || aux.charAt(i) != '2' || aux.charAt(i) != '3'
+					|| aux.charAt(i) != '4' || aux.charAt(i) != '5' || aux.charAt(i) != '6' || aux.charAt(i) != '7'
+					|| aux.charAt(i) != '8' || aux.charAt(i) != '9' || aux.charAt(i) == '.') {
+				cont++;
+			}
+			if (aux.charAt(i) == '.') {
+				contPonto++;
+			}
+		}
+
+		if (cont == aux.length() && (contPonto == 1 || contPonto == 0)) {
+			return true;
+		} else {
+			return false;
+		}
+
 	}
 
 	public boolean conectarGeral() {
@@ -105,39 +222,22 @@ public class ContaDAO {
 
 				String sql = "CREATE DATABASE IF NOT EXISTS SistemaBancario;";
 				PreparedStatement ps = conn.prepareStatement(sql);
+				ps.execute();
 
-				if (ps.execute()) {
+				sql = "use SistemaBancario;";
+				ps = conn.prepareStatement(sql);
+				ps.execute();
 
-					sql = "use SistemaBancario;";
-					PreparedStatement ps2 = conn.prepareStatement(sql);
+				sql = "CREATE TABLE IF NOT EXISTS CCcontas(nrconta varchar(8) not null, agencia varchar(4) not null, titular varchar(30), saldo double not null, limite double not null, cpf varchar(14) unique );";
+				ps = conn.prepareStatement(sql);
+				ps.executeUpdate();
 
-					if (ps2.execute()) {
-
-						sql = "CREATE TABLE IF NOT EXISTS CCcontas(nrconta varchar(8) not null, agencia varchar(4) not null, titular varchar(30), saldo double not null (valor >= 0) , limite double not null check (valor >= 0), cpf varchar(14) unique );";
-						PreparedStatement ps3 = conn.prepareStatement(sql);
-						if (ps3.executeUpdate() == 1) {
-
-							this.fecharConexao();
-							return "Banco de Dados criado com sucesso!";
-
-						} else {
-							this.fecharConexao();
-							return "Não foi possivel criar o Banco de Dados!";
-						}
-
-					} else {
-						this.fecharConexao();
-						return "Não foi possivel criar o Banco de Dados!";
-					}
-
-				} else {
-					this.fecharConexao();
-					return "Não foi possivel criar o Banco de Dados!";
-				}
+				this.fecharConexao();
+				return "Banco de Dados criado com sucesso!";
 
 			} else {
 
-				return "Não foi possivel realizar a conexão com o Banco de Dados!";
+				return "NÃ£o foi possivel realizar a conexÃ£o com o Banco de Dados!";
 			}
 
 		} catch (Exception e) {
@@ -154,22 +254,14 @@ public class ContaDAO {
 
 				String sql = "DROP DATABASE IF EXISTS SistemaBancario;";
 				PreparedStatement ps = conn.prepareStatement(sql);
+				ps.execute();
 
-				if (ps.execute()) {
-
-					this.fecharConexao();
-					return "Banco de Dados deletado com sucesso!";
-
-				} else {
-
-					this.fecharConexao();
-					return "Não foi possivel deletar o Banco de Dados!";
-
-				}
+				this.fecharConexao();
+				return "Banco de Dados deletado com sucesso!";
 
 			} else {
 
-				return "Não foi possivel realizar a conexão com o Banco de Dados!";
+				return "NÃ£o foi possivel realizar a conexÃ£o com o Banco de Dados!";
 
 			}
 
@@ -205,26 +297,21 @@ public class ContaDAO {
 					ps2.setDouble(5, cc.getLimite());
 					ps2.setString(6, cc.getCpf());
 
-					if (ps.executeUpdate() == 1) {
+					ps.executeUpdate();
 
-						this.fecharConexao();
-						return "Conta Cadastrada com sucesso!";
-					} else {
-
-						this.fecharConexao();
-						return "Não foi possivel cadastrar a sua conta!";
-
-					}
+					this.fecharConexao();
+					return "Conta Cadastrada com sucesso!";
+						
 				} else {
 
 					this.fecharConexao();
-					return "Cpf já cadastrado!";
+					return "Cpf jÃ¡ cadastrado!";
 
 				}
 
 			} else {
 
-				return "Não foi possivel realizar a conexão com o Banco de Dados!";
+				return "NÃ£o foi possivel realizar a conexÃ£o com o Banco de Dados!";
 
 			}
 
@@ -254,7 +341,7 @@ public class ContaDAO {
 
 					this.fecharConexao();
 
-					return "Não foi possivel acessar o cpf informado, por favor tente novamente!";
+					return "NÃ£o foi possivel acessar o cpf informado, por favor tente novamente!";
 
 				} else {
 
@@ -271,18 +358,18 @@ public class ContaDAO {
 						if (ps2.executeUpdate() == 1) {
 
 							this.fecharConexao();
-							return "Saque realizado com sucesso! \n Seu novo saldo é R$: " + novoSaldo;
+							return "Saque realizado com sucesso! \n Seu novo saldo Ã© R$: " + novoSaldo;
 
 						} else {
 
 							this.fecharConexao();
-							return "Não foi possivel realizar o seu saque!";
+							return "NÃ£o foi possivel realizar o seu saque!";
 
 						}
 					} else {
 
 						this.fecharConexao();
-						return "O seu limite para saque é R$: " + (saldo + limite);
+						return "O seu limite para saque Ã© R$: " + (saldo + limite);
 
 					}
 
@@ -290,7 +377,7 @@ public class ContaDAO {
 
 			} else {
 
-				return "Não foi possivel realizar a conexão com o Banco de Dados!";
+				return "NÃ£o foi possivel realizar a conexÃ£o com o Banco de Dados!";
 
 			}
 
@@ -328,24 +415,24 @@ public class ContaDAO {
 					if (ps2.executeUpdate() == 1) {
 
 						this.fecharConexao();
-						return "Valor depositado com sucesso, seu novo saldo é R$: " + novoSaldo;
+						return "Valor depositado com sucesso, seu novo saldo Ã© R$: " + novoSaldo;
 
 					} else {
 
 						this.fecharConexao();
-						return "Não foi possivel realizar o seu deposito!";
+						return "NÃ£o foi possivel realizar o seu deposito!";
 					}
 
 				} else {
 
 					this.fecharConexao();
-					return "Não foi possivel acessar o cpf informado, por favor tente novamente!";
+					return "NÃ£o foi possivel acessar o cpf informado, por favor tente novamente!";
 
 				}
 
 			} else {
 
-				return "Não foi possivel realizar o conexão com o Banco de Dados!";
+				return "NÃ£o foi possivel realizar o conexÃ£o com o Banco de Dados!";
 
 			}
 
@@ -380,19 +467,19 @@ public class ContaDAO {
 
 					this.fecharConexao();
 
-					return "Conta: " + conta + "\n Agência: " + agencia + "\n Titular: " + titular + "\n Saldo: R$: "
+					return "Conta: " + conta + "\n AgÃªncia: " + agencia + "\n Titular: " + titular + "\n Saldo: R$: "
 							+ saldo + "\n Limite: R$: " + limite + "\n CPF: " + cpf;
 
 				} else {
 
 					this.fecharConexao();
-					return "Não foi possivel acessar o cpf informado, por favor tente novamente!";
+					return "NÃ£o foi possivel acessar o cpf informado, por favor tente novamente!";
 
 				}
 
 			} else {
 
-				return "Não foi possivel realizar o conexão com o Banco de Dados!";
+				return "NÃ£o foi possivel realizar o conexÃ£o com o Banco de Dados!";
 
 			}
 
@@ -433,15 +520,15 @@ public class ContaDAO {
 					limite = rs.getDouble("limite");
 					cpf = rs.getString("cpf");
 
-					vetor.add("Conta: " + conta + "\n Agência: " + agencia + "\n Titular: " + titular + "\n Saldo: R$: "
-							+ saldo + "\n Limite: R$: " + limite + "\n CPF: " + cpf + "   ||   ");
+					vetor.add("Conta: " + conta + "\n AgÃªncia: " + agencia + "\n Titular: " + titular
+							+ "\n Saldo: R$: " + saldo + "\n Limite: R$: " + limite + "\n CPF: " + cpf + "   ||   ");
 				}
 				this.fecharConexao();
 				return vetor;
 
 			} else {
 
-				vetor.add("Não foi possivel realizar o conexão com o Banco de Dados!");
+				vetor.add("NÃ£o foi possivel realizar o conexÃ£o com o Banco de Dados!");
 
 				return vetor;
 
