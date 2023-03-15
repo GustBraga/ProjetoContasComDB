@@ -62,12 +62,28 @@ public class ContaCC {
 		this.cpf = cpf;
 	}
 	
-	public String criarDB() {
-		
-		ContaDAO c = new ContaDAO();
-		String retorno = c.criarTodoDB();
-		
-		return retorno;
+	public boolean verificaCpf(String cpf) {
+		return new ContaDAO().verificaCpf(cpf);
+	}
+	
+	public boolean verificaNrConta(String nrConta) {
+		return new ContaDAO().verificaNrConta(nrConta);
+	}
+	
+	public boolean verificaAgencia(String agencia) {
+		return new ContaDAO().verificaAgencia(agencia);
+	}
+	
+	public boolean verificaTitular(String titular) {
+		return new ContaDAO().verificaTitular(titular);
+	}
+	
+	public boolean verificaDigito(double digito) {
+		return new ContaDAO().verificaDigito(digito);
+	}
+	
+	public String criarDB() {	
+		return new ContaDAO().criarTodoDB();
 	}
 	
 	public String deletarDB() {
@@ -81,30 +97,30 @@ public class ContaCC {
 	
 	public String sacarCC(double valorSaque, String cpf) {	
 		
-		if (valorSaque > 0 && !cpf.isEmpty() && cpf.charAt(3) == '.' && cpf.charAt(7) == '.' && cpf.charAt(11) == '-' && new ContaDAO().verificaCpf(cpf)) {
+		if (valorSaque > 0 && new ContaDAO().verificaCpf(cpf)) {
 			return new ContaDAO().sacarContaCC(valorSaque, cpf);
 		} else {
-			return "Valor de saque ou/e Cpf inválidos!";
+			return "Valor de saque ou/e Cpf invÃ¡lidos!";
 		}
 		
 	}
 	
 	public String depositarCC(double valorDeposito, String cpf) {
 		
-		if (new ContaDAO().verificaCpf(cpf) && valorDeposito > 0 && !cpf.isEmpty() && cpf.charAt(3) == '.' && cpf.charAt(7) == '.' && cpf.charAt(11) == '-') {
+		if (new ContaDAO().verificaCpf(cpf) && valorDeposito > 0) {
 			return new ContaDAO().depositarContaCC(valorDeposito, cpf);
 		}else {
-			return "Valor de deposito ou/e Cpf inválidos!";
+			return "Valor de deposito ou/e Cpf invÃ¡lidos!";
 		}
 		
 	}
 	
 	public String verificarCC(String cpf) {
 		
-		if (!cpf.isEmpty() && cpf.charAt(3) == '.' && cpf.charAt(7) == '.' && cpf.charAt(11) == '-' && new ContaDAO().verificaCpf(cpf)) {
+		if (new ContaDAO().verificaCpf(cpf)) {
 			return new ContaDAO().veririficarConta(cpf);
 		} else {
-			return "Cpf inválido!";
+			return "Cpf invÃ¡lido!";
 		}
 		
 	}
