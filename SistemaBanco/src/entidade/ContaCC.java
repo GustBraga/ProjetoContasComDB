@@ -1,132 +1,288 @@
-package entidade;
+package persistencia;
 
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.util.ArrayList;
 
-import persistencia.ContaDAO;
+import entidade.ContaCC;
 
-public class ContaCC {
+public class ContaCCDAO extends ContaDAO {
 
-	private String nrConta;
-	private String agencia;
-	private String titular;
-	private double saldo;
-	private double limite;
-	private String cpf;
-	
-	public ContaCC(String nrConta, String agencia, String titular, double saldo, double limite, String cpf) {
-		super();
-		this.nrConta = nrConta;
-		this.agencia = agencia;
-		this.titular = titular;
-		this.saldo = saldo;
-		this.limite = limite;
-		this.cpf = cpf;
-	}
-	public ContaCC() {
-		super();
-	}
-	public String getNrConta() {
-		return nrConta;
-	}
-	public void setNrConta(String nrConta) {
-		this.nrConta = nrConta;
-	}
-	public String getAgencia() {
-		return agencia;
-	}
-	public void setAgencia(String agencia) {
-		this.agencia = agencia;
-	}
-	public String getTitular() {
-		return titular;
-	}
-	public void setTitular(String titular) {
-		this.titular = titular;
-	}
-	public double getSaldo() {
-		return saldo;
-	}
-	public void setSaldo(double saldo) {
-		this.saldo = saldo;
-	}
-	public double getLimite() {
-		return limite;
-	}
-	public void setLimite(double limite) {
-		this.limite = limite;
-	}
-	public String getCpf() {
-		return cpf;
-	}
-	public void setCpf(String cpf) {
-		this.cpf = cpf;
-	}
-	
-	public boolean verificaCpf(String cpf) {
-		return new ContaDAO().verificaCpf(cpf);
-	}
-	
-	public boolean verificaNrConta(String nrConta) {
-		return new ContaDAO().verificaNrConta(nrConta);
-	}
-	
-	public boolean verificaAgencia(String agencia) {
-		return new ContaDAO().verificaAgencia(agencia);
-	}
-	
-	public boolean verificaTitular(String titular) {
-		return new ContaDAO().verificaTitular(titular);
-	}
-	
-	public boolean verificaDigito(double digito) {
-		return new ContaDAO().verificaDigito(digito);
-	}
-	
-	public String criarDB() {	
-		return new ContaDAO().criarTodoDB();
-	}
-	
-	public String deletarDB() {
-		return new ContaDAO().deletarDB();
-	}
-	
-	public String cadastrarCC () {
-		return new ContaDAO().cadastrarCC(this);		
-	}
-	
-	public String sacarCC(double valorSaque, String cpf) {	
-		
-		if (valorSaque > 0 && new ContaDAO().verificaCpf(cpf)) {
-			return new ContaDAO().sacarContaCC(valorSaque, cpf);
-		} else {
-			return "Valor de saque ou/e Cpf invÃ¡lidos!";
+	public String cadastrarCC(ContaCC cc) {
+
+		try {
+
+			if (this.conectarDB()) {
+
+				String sql = "SELECT cpf FROM CCcontas WHERE cpf like ?;";
+				PreparedStatement ps = conn.prepareStatement(sql);
+
+				ps.setString(1, cc.getCpf());
+
+				ResultSet rs = ps.executeQuery();
+
+				if (rs.next() == false) {
+
+					ps = conn.prepareStatement(
+							"INSERT INTO CCcontas(nrConta, agencia, titular, saldo, limite, cpf) VALUES (?,?,?,?,?,?);");
+
+					ps.setString(1, cc.getNrConta());
+					ps.setString(2, cc.getAgencia());
+					ps.setString(3, cc.getTitular());
+					ps.setDouble(4, cc.getSaldo());
+					ps.setDouble(5, cc.getLimite());
+					ps.setString(6, cc.getCpf());
+
+					if (ps.executeUpdate() == 1) {
+						this.fecharConexao();
+						return "Conta Cadastrada com sucesso!";
+
+					} else {
+						return "Não foi possivel Cadastrar sua conta!";
+					}
+				} else {
+
+					this.fecharConexao();
+					return "Cpf jÃ¡ cadastrado!";
+				}
+
+			} else {
+
+				return "NÃ£o foi possivel realizar a conexÃ£o com o Banco de Dados!";
+
+			}
+
+		} catch (Exception e) {
+
+			return e + "";
 		}
-		
+
 	}
-	
-	public String depositarCC(double valorDeposito, String cpf) {
-		
-		if (new ContaDAO().verificaCpf(cpf) && valorDeposito > 0) {
-			return new ContaDAO().depositarContaCC(valorDeposito, cpf);
-		}else {
-			return "Valor de deposito ou/e Cpf invÃ¡lidos!";
+
+	public String sacarContaCC(double valorSaque, String cpf) {
+
+		try {
+			if (this.conectarDB()) {
+
+				String sql = "SELECT saldo, limite, cpf FROM CCcontas WHERE cpf like ?;";
+				PreparedStatement ps = conn.prepareStatement(sql);
+
+				ps.setString(1, cpf);
+
+				ResultSet rs = ps.executeQuery();
+
+				double saldo;
+				double limite;
+				double novoSaldo;
+
+				if (rs.next()) {
+
+					saldo = rs.getDouble("saldo");
+					limite = rs.getDouble("limite");
+
+					if (valorSaque <= (saldo + limite)) {
+
+						novoSaldo = (saldo - valorSaque);
+
+						sql = "Update CCcontas SET saldo = ? where cpf like ?;";
+
+						ps = conn.prepareStatement(sql);
+						ps.setDouble(1, novoSaldo);
+						ps.setString(2, cpf);
+
+						if (ps.executeUpdate() == 1) {
+
+							this.fecharConexao();
+							return "Saque realizado com sucesso, Seu novo saldo Ã© R$: " + novoSaldo;
+
+						} else {
+
+							this.fecharConexao();
+							return "NÃ£o foi possivel realizar o seu saque!";
+
+						}
+					} else {
+
+						this.fecharConexao();
+						return "O seu limite para saque Ã© R$: " + (saldo + limite);
+
+					}
+
+				} else {
+					this.fecharConexao();
+					return "Cpf não cadastrado!";
+				}
+			} else {
+
+				return "NÃ£o foi possivel realizar a conexÃ£o com o Banco de Dados!";
+
+			}
+
+		} catch (Exception e) {
+
+			return e + "";
+
 		}
-		
+
 	}
-	
-	public String verificarCC(String cpf) {
-		
-		if (new ContaDAO().verificaCpf(cpf)) {
-			return new ContaDAO().veririficarConta(cpf);
-		} else {
-			return "Cpf invÃ¡lido!";
+
+	public String depositarContaCC(double valorDeposito, String cpf) {
+
+		try {
+
+			if (this.conectarDB()) {
+
+				String sql = "SELECT saldo, cpf FROM CCcontas WHERE cpf like ?;";
+				PreparedStatement ps = conn.prepareStatement(sql);
+
+				ps.setString(1, cpf);
+
+				ResultSet rs = ps.executeQuery();
+
+				double novoSaldo = valorDeposito;
+
+				if (rs.next()) {
+
+					novoSaldo = novoSaldo + rs.getDouble("saldo");
+
+					sql = "UPDATE CCcontas set SALDO = ? WHERE cpf like ?;";
+
+					ps = conn.prepareStatement(sql);
+					ps.setDouble(1, novoSaldo);
+					ps.setString(2, cpf);
+
+					if (ps.executeUpdate() == 1) {
+
+						this.fecharConexao();
+						return "Valor depositado com sucesso, seu novo saldo Ã© R$: " + novoSaldo;
+
+					} else {
+
+						this.fecharConexao();
+						return "NÃ£o foi possivel realizar o seu deposito!";
+					}
+
+				} else {
+
+					this.fecharConexao();
+					return "NÃ£o foi possivel acessar o cpf informado, por favor tente novamente!";
+
+				}
+
+			} else {
+
+				return "NÃ£o foi possivel realizar o conexÃ£o com o Banco de Dados!";
+
+			}
+
+		} catch (Exception e) {
+
+			return e + "";
+
 		}
-		
+
 	}
-	
-	public ArrayList<String> listarContasCC(){
-		return new ContaDAO().listarContasCC();
+
+	public String veririficarConta(String cpf) {
+
+		try {
+
+			if (this.conectarDB()) {
+
+				String sql = "SELECT nrConta, agencia, titular, saldo, limite, cpf FROM CCcontas WHERE cpf like ?;";
+				PreparedStatement ps = conn.prepareStatement(sql);
+
+				ps.setString(1, cpf);
+
+				ResultSet rs = ps.executeQuery();
+
+				String nrConta;
+				String agencia;
+				String titular;
+				Double saldo;
+				Double limite;
+
+				if (rs.next()) {
+
+					nrConta = rs.getString("nrConta");
+					agencia = rs.getString("agencia");
+					titular = rs.getString("titular");
+					saldo = rs.getDouble("saldo");
+					limite = rs.getDouble("limite");
+
+					this.fecharConexao();
+
+					return " Conta: " + nrConta + "\n Agência: " + agencia + "\n Titular: " + titular + "\n Saldo: R$: "
+							+ saldo + "\n Limite: R$: " + limite + "\n CPF: " + cpf;
+
+				} else {
+
+					this.fecharConexao();
+					return "NÃ£o foi possivel acessar o cpf informado, por favor tente novamente!";
+
+				}
+
+			} else {
+
+				return "NÃ£o foi possivel realizar o conexÃ£o com o Banco de Dados!";
+
+			}
+
+		} catch (Exception e) {
+
+			return e + "";
+
+		}
+
 	}
-	
-	
+
+	public ArrayList<String> listarContasCC() {
+
+		ArrayList<String> vetor = new ArrayList<String>();
+
+		try {
+
+			if (this.conectarDB()) {
+
+				String sql = "SELECT nrConta, agencia, titular, saldo, limite, cpf FROM CCcontas;";
+				PreparedStatement ps = conn.prepareStatement(sql);
+
+				ResultSet rs = ps.executeQuery();
+
+				String conta;
+				String agencia;
+				String titular;
+				Double saldo;
+				Double limite;
+				String cpf;
+
+				while (rs.next()) {
+
+					conta = rs.getString("nrConta");
+					agencia = rs.getString("agencia");
+					titular = rs.getString("titular");
+					saldo = rs.getDouble("saldo");
+					limite = rs.getDouble("limite");
+					cpf = rs.getString("cpf");
+
+					vetor.add("\n Conta: " + conta + "\n AgÃªncia: " + agencia + "\n Titular: " + titular
+							+ "\n Saldo: R$: " + saldo + "\n Limite: R$: " + limite + "\n CPF: " + cpf);
+
+				}
+				this.fecharConexao();
+				return vetor;
+			} else {
+
+				vetor.add("NÃ£o foi possivel realizar o conexÃ£o com o Banco de Dados!");
+
+				return vetor;
+			}
+
+		} catch (Exception e) {
+
+			vetor.add(e + "");
+			return vetor;
+		}
+	}
+
 }
