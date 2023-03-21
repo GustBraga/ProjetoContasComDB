@@ -1,7 +1,9 @@
 package apresentacao;
 
+import java.util.ArrayList;
 import java.util.Scanner;
 
+import entidade.Conta;
 import entidade.ContaCC;
 import entidade.ContaCP;
 
@@ -56,13 +58,15 @@ public class Principal {
 						} else {
 							System.out.print("Digite o valor do seu Saldo: ");
 							double saldo = Double.parseDouble(ler.nextLine());
-							if (saldo < 0 || new ContaCC().verificaDigito(saldo) == false || Double.toString(saldo).charAt(0) == '.') {
+							if (saldo < 0 || new ContaCC().verificaDigito(saldo) == false
+									|| Double.toString(saldo).charAt(0) == '.') {
 								System.out.println("Valor de Saldo inválido!");
 								break;
 							} else {
 								System.out.print("Digite o valor do seu Limite: ");
 								double limite = Double.parseDouble(ler.nextLine());
-								if (limite < 0 || new ContaCC().verificaDigito(limite) == false || Double.toString(limite).charAt(0) == '.') {
+								if (limite < 0 || new ContaCC().verificaDigito(limite) == false
+										|| Double.toString(limite).charAt(0) == '.') {
 									System.out.println("Valor de Limite inválido!");
 									break;
 								} else {
@@ -72,9 +76,9 @@ public class Principal {
 										System.out.println("Cpf inválido!");
 										break;
 									} else {
-										
+
 										ContaCC cc = new ContaCC(nrConta, agencia, titular, saldo, limite, cpf);
-										
+
 										System.out.println(cc.cadastrarCC());
 
 										break;
@@ -87,7 +91,7 @@ public class Principal {
 			}
 
 			case "2": {
-				
+
 				System.out.print("Digite o Número da sua Conta(Ex: 552018-0): ");
 				String nrConta = ler.nextLine().trim();
 				if (nrConta.isEmpty() || new ContaCP().verificaNrConta(nrConta) == false) {
@@ -108,13 +112,15 @@ public class Principal {
 						} else {
 							System.out.print("Digite o valor do seu Saldo: ");
 							double saldo = Double.parseDouble(ler.nextLine());
-							if (saldo < 0 || new ContaCP().verificaDigito(saldo) == false || Double.toString(saldo).charAt(0) == '.') {
+							if (saldo < 0 || new ContaCP().verificaDigito(saldo) == false
+									|| Double.toString(saldo).charAt(0) == '.') {
 								System.out.println("Valor de Saldo inválido!");
 								break;
 							} else {
 								System.out.print("Digite o valor do seu Rendimento: ");
 								double rendimento = Double.parseDouble(ler.nextLine());
-								if (rendimento < 0 || new ContaCP().verificaDigito(rendimento) == false || Double.toString(rendimento).charAt(0) == '.') {
+								if (rendimento < 0 || new ContaCP().verificaDigito(rendimento) == false
+										|| Double.toString(rendimento).charAt(0) == '.') {
 									System.out.println("Valor de Rendimento inválido!");
 									break;
 								} else {
@@ -124,9 +130,9 @@ public class Principal {
 										System.out.println("Cpf inválido!");
 										break;
 									} else {
-										
+
 										ContaCP cp = new ContaCP(nrConta, agencia, titular, saldo, rendimento, cpf);
-										
+
 										System.out.println(cp.cadastrarCP());
 
 										break;
@@ -153,7 +159,7 @@ public class Principal {
 			}
 
 			case "4": {
-				
+
 				System.out.print("Digite o seu Cpf para exibir dados(Ex: 115.977.897-39): ");
 				String cpf = ler.nextLine().trim();
 				if (cpf.isEmpty() || new ContaCP().verificaCpf(cpf) == false) {
@@ -187,7 +193,7 @@ public class Principal {
 			}
 
 			case "6": {
-				
+
 				System.out.print("Digite o valor do Deposito: ");
 				double valorDeposito = Double.parseDouble(ler.nextLine().trim());
 				if (valorDeposito < 0) {
@@ -227,7 +233,7 @@ public class Principal {
 			}
 
 			case "8": {
-				
+
 				System.out.print("Digite o valor do seu Saque: ");
 				double valorSaque = Double.parseDouble(ler.nextLine().trim());
 				if (valorSaque < 0) {
@@ -248,28 +254,38 @@ public class Principal {
 
 			case "9": {
 
-				System.out.println(new ContaCC().listarContasCC());
+				ArrayList<String> n = new ContaCC().listarContasCC();
+
+				for (int i = 0; i < n.size(); i++) {
+
+					System.out.println(n.get(i));
+				}
 
 				break;
 			}
 
 			case "10": {
-				
-				System.out.println(new ContaCP().listarContasCP());
+
+				ArrayList<String> n = new ContaCP().listarContasCP();
+
+				for (int i = 0; i < n.size(); i++) {
+
+					System.out.println(n.get(i));
+				}
 
 				break;
 			}
 
 			case "20": {
 
-				System.out.println(new ContaCC().criarDB());
+				System.out.println(new Conta().criarDB());
 
 				break;
 			}
 
 			case "21": {
 
-				System.out.println(new ContaCC().deletarDB());
+				System.out.println(new Conta().deletarDB());
 
 				break;
 			}
